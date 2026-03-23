@@ -1,5 +1,3 @@
-"""Multi-symbol equity scan: train, infer, and backtest per ticker."""
-
 from __future__ import annotations
 
 import logging
@@ -22,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 def _safe_artifact_name(ticker: str) -> str:
-    """Filesystem-safe folder name for a ticker."""
     return re.sub(r"[^0-9a-zA-Z._-]+", "_", ticker.strip())
 
 
@@ -50,34 +47,6 @@ def scan_equities(
     risk_free_daily: float = 0.0,
     max_symbols: Optional[int] = None,
 ) -> pd.DataFrame:
-    """Run the full pipeline for each ticker and collect summary metrics.
-
-    Args:
-        tickers: Symbols to process (e.g. BIST30 list for a given date).
-        start: History start ``YYYY-MM-DD``.
-        end: History end ``YYYY-MM-DD``.
-        market: ``us`` or ``bist``.
-        settings: API keys and paths.
-        artifacts_root: Parent directory; each symbol writes to a subfolder.
-        label_horizon: Label horizon for ``y_class``.
-        hold_epsilon: Neutral return band for labels.
-        macro_csv_path: Optional local macro CSV.
-        use_fred_macro: Merge FRED panel when key present.
-        use_evds_macro: Merge EVDS series when key and codes present.
-        evds_series_codes: Comma-separated EVDS codes.
-        seq_len: LSTM input length.
-        epochs: Training epochs per symbol (keep moderate for scans).
-        conf_threshold: Confidence filter on signals.
-        initial_cash: Backtest starting cash.
-        commission: Fee fraction.
-        slippage_bps: Slippage in basis points.
-        position_size_pct: Target fraction of portfolio.
-        risk_free_daily: For Sharpe/Sortino.
-        max_symbols: Optional cap (process first N only).
-
-    Returns:
-        One row per symbol with status and performance columns.
-    """
     if max_symbols is not None:
         tickers = tickers[: int(max_symbols)]
     rows: List[dict] = []

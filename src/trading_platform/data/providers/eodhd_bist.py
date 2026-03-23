@@ -1,5 +1,3 @@
-"""BIST EOD bars via EOD Historical Data REST API."""
-
 from __future__ import annotations
 
 import logging
@@ -16,14 +14,7 @@ EODHD_EOD_URL = "https://eodhistoricaldata.com/api/eod/{symbol}"
 
 
 class EodhdBistProvider(MarketProvider):
-    """Fetches Istanbul exchange EOD; symbols must include ``.IS`` suffix."""
-
     def __init__(self, api_key: Optional[str]) -> None:
-        """Initialize provider.
-
-        Args:
-            api_key: EODHD token; if missing, ``fetch`` returns empty and logs error.
-        """
         self._api_key = api_key
 
     def fetch(
@@ -32,16 +23,6 @@ class EodhdBistProvider(MarketProvider):
         start: str,
         end: str,
     ) -> pd.DataFrame:
-        """Download EOD JSON per symbol.
-
-        Args:
-            tickers: e.g. ``["THYAO.IS"]``.
-            start: Inclusive start ``YYYY-MM-DD``.
-            end: Inclusive end ``YYYY-MM-DD``.
-
-        Returns:
-            Concatenated OHLCV panel with ``ticker`` column.
-        """
         if not self._api_key:
             logger.error("EODHD_API_KEY not set; cannot fetch BIST EOD data")
             return pd.DataFrame()

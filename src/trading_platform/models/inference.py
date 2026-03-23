@@ -1,5 +1,3 @@
-"""Run inference; produce signal (-1,0,1) and confidence per bar."""
-
 from __future__ import annotations
 
 import logging
@@ -54,16 +52,6 @@ def predict_signals(
     artifacts_dir: Path,
     device: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Align predictions to ``df`` index (NaN until first full window).
-
-    Args:
-        df: Must contain all ``feature_columns`` from meta.
-        artifacts_dir: Training artifact directory.
-        device: Torch device override.
-
-    Returns:
-        DataFrame columns: ``pred_class``, ``confidence``, ``signal``.
-    """
     model, scaler, feature_cols, seq_len, _ = load_trained_bundle(artifacts_dir, device=device)
     dev = next(model.parameters()).device
     missing = [c for c in feature_cols if c not in df.columns]

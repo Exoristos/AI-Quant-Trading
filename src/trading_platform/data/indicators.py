@@ -1,5 +1,3 @@
-"""Causal technical indicators (no centered windows, no future leakage)."""
-
 from __future__ import annotations
 
 import logging
@@ -12,43 +10,15 @@ logger = logging.getLogger(__name__)
 
 
 def ema(series: pd.Series, span: int, min_periods: int | None = None) -> pd.Series:
-    """Exponential moving average using past-only ``ewm`` (adjust=False).
-
-    Args:
-        series: Price or return series.
-        span: EWM span parameter.
-        min_periods: Minimum observations; defaults to ``span``.
-
-    Returns:
-        EMA series aligned to input index.
-    """
     mp = min_periods if min_periods is not None else span
     return series.ewm(span=span, adjust=False, min_periods=mp).mean()
 
 
 def sma(series: pd.Series, window: int) -> pd.Series:
-    """Simple moving average (trailing window only).
-
-    Args:
-        series: Input series.
-        window: Rolling window length.
-
-    Returns:
-        SMA series.
-    """
     return series.rolling(window=window, min_periods=window).mean()
 
 
 def rsi(close: pd.Series, period: int = 14) -> pd.Series:
-    """Relative Strength Index (Wilder-style smoothing via EWM).
-
-    Args:
-        close: Close prices.
-        period: Lookback for gains/losses.
-
-    Returns:
-        RSI in [0, 100], NaN during warmup.
-    """
     delta = close.diff()
     gain = delta.clip(lower=0.0)
     loss = (-delta).clip(lower=0.0)
@@ -66,17 +36,6 @@ def macd(
     slow: int = 26,
     signal: int = 9,
 ) -> pd.DataFrame:
-    """MACD line, signal, and histogram (causal EMAs).
-
-    Args:
-        close: Close prices.
-        fast: Fast EMA span.
-        slow: Slow EMA span.
-        signal: Signal line span.
-
-    Returns:
-        DataFrame columns ``macd``, ``macd_signal``, ``macd_hist``.
-    """
     ema_fast = ema(close, fast)
     ema_slow = ema(close, slow)
     line = ema_fast - ema_slow
@@ -93,16 +52,6 @@ def bollinger_bands(
     window: int = 20,
     num_std: float = 2.0,
 ) -> pd.DataFrame:
-    """Bollinger bands using trailing mean and std (ddof=0).
-
-    Args:
-        close: Close prices.
-        window: Rolling window.
-        num_std: Standard deviation multiplier.
-
-    Returns:
-        DataFrame with ``bb_mid``, ``bb_upper``, ``bb_lower``.
-    """
     mid = sma(close, window)
     std = close.rolling(window=window, min_periods=window).std(ddof=0)
     upper = mid + num_std * std
@@ -111,15 +60,6 @@ def bollinger_bands(
 
 
 def add_all_indicators(ohlcv: pd.DataFrame, price_col: str = "close") -> pd.DataFrame:
-    """Append standard indicators to OHLCV (mutates copy only).
-
-    Args:
-        ohlcv: Must contain ``price_col``.
-        price_col: Column name for close.
-
-    Returns:
-        DataFrame with original and indicator columns.
-    """
     df = ohlcv.copy()
     c = df[price_col]
     df["ema_12"] = ema(c, 12)
@@ -137,8 +77,7 @@ def add_all_indicators(ohlcv: pd.DataFrame, price_col: str = "close") -> pd.Data
 
 
 def feature_columns_default() -> List[str]:
-    """Ordered default feature names for modeling (OHLCV + indicators + optional macro)."""
-    base = [
+    return [
         "open",
         "high",
         "low",
@@ -155,4 +94,3 @@ def feature_columns_default() -> List[str]:
         "bb_upper",
         "bb_lower",
     ]
-    return base

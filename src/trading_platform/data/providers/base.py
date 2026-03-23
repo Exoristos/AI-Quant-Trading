@@ -1,5 +1,3 @@
-"""Abstract market data provider and shared types."""
-
 from __future__ import annotations
 
 import logging
@@ -10,15 +8,12 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-# Standard OHLCV column names after normalization
 OHLCV_COLS = ["open", "high", "low", "close", "volume"]
 
 OHLCVFrame: TypeAlias = pd.DataFrame
 
 
 class MarketProvider(ABC):
-    """Fetches daily (or lower) OHLCV for one or more tickers."""
-
     @abstractmethod
     def fetch(
         self,
@@ -26,31 +21,10 @@ class MarketProvider(ABC):
         start: str,
         end: str,
     ) -> pd.DataFrame:
-        """Return multi-index or single-ticker OHLCV DataFrame.
-
-        Args:
-            tickers: Instrument identifiers in provider-native form.
-            start: Inclusive start date ``YYYY-MM-DD``.
-            end: Inclusive end date ``YYYY-MM-DD``.
-
-        Returns:
-            DataFrame indexed by datetime (timezone-naive, normalized to date).
-            Columns include open, high, low, close, volume; optional ``ticker``
-            column for panels.
-        """
         raise NotImplementedError
 
 
 def normalize_ohlcv(df: pd.DataFrame, ticker: Optional[str] = None) -> pd.DataFrame:
-    """Rename columns to lowercase OHLCV and sort index ascending.
-
-    Args:
-        df: Raw provider frame.
-        ticker: Optional symbol to attach.
-
-    Returns:
-        Normalized DataFrame with DatetimeIndex.
-    """
     if df.empty:
         return df
     out = df.copy()

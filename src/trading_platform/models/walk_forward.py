@@ -1,5 +1,3 @@
-"""Chronological walk-forward evaluation for the LSTM classifier."""
-
 from __future__ import annotations
 
 import logging
@@ -37,29 +35,6 @@ def walk_forward_lstm_metrics(
     lr: float = 1e-3,
     device: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Train/evaluate LSTM on expanding time splits (no shuffling).
-
-    Uses :class:`sklearn.model_selection.TimeSeriesSplit` on sequence indices.
-    For each fold, the scaler is fit **only** on training rows (causal).
-
-    Args:
-        df: Feature matrix with ``label_col``.
-        feature_cols: Model inputs.
-        label_col: Integer class targets.
-        seq_len: LSTM window length.
-        n_splits: Number of walk-forward folds.
-        epochs_per_fold: Training epochs per fold (keep small for speed).
-        batch_size: Mini-batch size.
-        hidden_size: LSTM hidden units.
-        num_layers: LSTM depth.
-        dropout: Dropout rate.
-        lr: Adam learning rate.
-        device: Torch device override.
-
-    Returns:
-        DataFrame with columns ``fold``, ``n_train_seq``, ``n_val_seq``,
-        ``val_accuracy``, ``val_loss``.
-    """
     dev = device or ("cuda" if torch.cuda.is_available() else "cpu")
     X_raw, y, _ = build_arrays_from_frame(df, feature_cols, label_col)
     n_seq = len(X_raw) - seq_len + 1

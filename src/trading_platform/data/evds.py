@@ -1,5 +1,3 @@
-"""TCMB EVDS macro series (USD/TRY, rates, etc.) via public API."""
-
 from __future__ import annotations
 
 import logging
@@ -11,12 +9,10 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# EVDS 3 platform: https://evds3.tcmb.gov.tr — legacy REST path kept for compatibility.
 EVDS_DEFAULT_BASE_URL = "https://evds3.tcmb.gov.tr/service/evds/"
 
 
 def _iso_to_evds_date(iso: str) -> str:
-    """Convert ``YYYY-MM-DD`` to EVDS ``DD-MM-YYYY``."""
     ts = pd.Timestamp(iso)
     return ts.strftime("%d-%m-%Y")
 
@@ -29,30 +25,6 @@ def fetch_evds_series(
     timeout: int = 120,
     base_url: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Download one or more EVDS series and return a tidy daily DataFrame.
-
-    Args:
-        series_codes: EVDS codes, e.g. ``["TP.DK.USD.A.YTL"]``. Multiple codes
-            are joined with ``-`` per TCMB convention.
-        start: Inclusive start ``YYYY-MM-DD``.
-        end: Inclusive end ``YYYY-MM-DD``.
-        api_key: EVDS API key from https://evds3.tcmb.gov.tr (profile / API).
-        timeout: HTTP timeout seconds.
-        base_url: REST base (trailing slash optional). Defaults to EVDS 3
-            ``.../service/evds/``. Set env ``EVDS_BASE_URL`` via :class:`AppSettings`
-            if TCMB documents a different path.
-
-    Returns:
-        DataFrame indexed by normalized date; one float column per series
-        (sanitized snake_case names). Empty if no rows.
-
-    Raises:
-        requests.HTTPError: On non-success HTTP status.
-
-    Note:
-        Invalid keys or wrong ``base_url`` may yield HTTP 200 with an HTML page;
-        those cases return an empty DataFrame and log a warning.
-    """
     if not api_key:
         logger.error("EVDS_API_KEY missing")
         return pd.DataFrame()
@@ -129,7 +101,6 @@ def fetch_evds_series(
 
 
 def _sanitize_col(name: str) -> str:
-    """Make a safe column name from EVDS field keys."""
     s = str(name).strip()
     s = re.sub(r"[^0-9a-zA-Z]+", "_", s)
     s = s.strip("_").lower()
@@ -143,7 +114,6 @@ def fetch_evds_to_frame(
     api_key: Optional[str],
     base_url: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Wrapper that returns empty DataFrame when ``api_key`` is missing."""
     if not api_key:
         return pd.DataFrame()
     return fetch_evds_series(series_codes, start, end, api_key, base_url=base_url)
