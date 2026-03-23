@@ -1,0 +1,34 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / editör yerel klasörleri (repoya girmez)
+.idea/
+.vscode/
+.cursor/
+
+# Yerel notlar (handoff / kullanım — paylaşılmaz)
+/HANDOFF.md
+/NASIL_KULLANILIR.md
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Artifacts / runs
+artifacts/

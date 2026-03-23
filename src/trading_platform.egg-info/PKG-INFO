@@ -1,0 +1,66 @@
+Metadata-Version: 2.4
+Name: trading-platform
+Version: 0.1.0
+Summary: LSTM-driven trading signals, backtesting, and Streamlit dashboard
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.0
+Requires-Dist: numpy>=1.24
+Requires-Dist: yfinance>=0.2.0
+Requires-Dist: requests>=2.28
+Requires-Dist: torch>=2.0
+Requires-Dist: scikit-learn>=1.3
+Requires-Dist: vectorbt>=0.26
+Requires-Dist: streamlit>=1.28
+Requires-Dist: plotly>=5.18
+Requires-Dist: pydantic>=2.0
+Requires-Dist: pydantic-settings>=2.0
+Requires-Dist: python-dotenv>=1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+
+# Trading Platform (LSTM + VectorBT + Streamlit)
+
+Modular pipeline: market data → causal features → PyTorch LSTM signals → VectorBT backtest → metrics and UI.
+
+## Setup
+
+```bash
+cd lstm_entegreli
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e ".[dev]"
+```
+
+Projede **[`.env`](.env)** dosyası anahtarlarınız için kullanılır (repoda yoksa bir kez oluşturun: `copy .env.example .env` veya `.env.example` içeriğini kopyalayıp `.env` adıyla kaydedin). `.gitignore` içinde olduğu için Git’e eklenmez; IDE bazen nokta ile başlayan dosyaları sol panelde gizleyebilir — **Dosya → Aç** ile `lstm_entegreli\.env` yolunu açabilirsiniz.
+
+Fill `EODHD_API_KEY` for BIST EOD data; optional `EVDS_API_KEY` / `FRED_API_KEY` for macro. US equities use `yfinance` without a key.
+
+## Run Streamlit UI
+
+```bash
+streamlit run src/trading_platform/ui/app.py
+```
+
+## Run tests
+
+```bash
+pytest
+```
+
+## Şimdi ne yapmalısınız? (checklist)
+
+1. Sanal ortam açıp `pip install -e ".[dev]"` çalıştırın.
+2. `.env.example` dosyasını `.env` yapıp **BIST için** `EODHD_API_KEY` girin (yoksa yfinance yedek kullanılır; kalite farkı olabilir).
+3. İsteğe bağlı: `FRED_API_KEY` (ABD CPI vb.); **`EVDS_API_KEY`** — TCMB [EVDS 3](https://evds3.tcmb.gov.tr/) ile USD/TRY (`TP.DK.USD.A.YTL` vb.) doğrudan API’den; TCMB farklı bir taban URL yayınlarsa `.env` içinde `EVDS_BASE_URL` kullanın. Alternatif: yerel makro CSV (**Macro CSV path**). Şema: [`examples/macro_sample.csv`](examples/macro_sample.csv).
+4. **BIST30 tarihsel üyelik:** [`examples/bist30_membership_template.csv`](examples/bist30_membership_template.csv) şablonunu kopyalayıp kendi `rebalance_date,ticker` satırlarınızla güncelleyin; Streamlit’te **Scan: membership CSV** ile uçtan uca tarama yapılır (survivorship için tarihsel doğruluk sizin dosyanıza bağlıdır).
+5. **Walk-forward:** Tek sembol modunda, çalıştırmadan sonra kronolojik fold metrikleri için sidebar’daki seçeneği işaretleyin.
+6. `streamlit run src/trading_platform/ui/app.py` ile arayüzü açın; **Run mode** (tek sembol / BIST tarama / US tarama), tarih aralığı ve **Run pipeline**.
+7. Doğrulama: `pytest`
+
+## Caveats
+
+- **Survivorship bias** if you use today’s index membership on historical data.
+- **Macro alignment** uses `merge_asof` backward; ensure macro dates reflect **availability**, not future revisions where possible.
+- Daily bars ignore intraday path; slippage and commission models are approximations.
+- Sidebar’daki BIST “quick pick” listesi **örnek** hisselerdir; resmi BIST 30 üyeliği tarihsel olarak sabit değildir.
