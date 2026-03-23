@@ -1,5 +1,3 @@
-"""Sequence dataset for multivariate LSTM classification."""
-
 from __future__ import annotations
 
 import json
@@ -19,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class LabelSpec:
-    """Metadata describing how labels were built."""
-
     horizon: int
     hold_epsilon: float
     num_classes: int = 3
@@ -31,16 +27,6 @@ def chronological_split_indices(
     train_ratio: float = 0.7,
     val_ratio: float = 0.15,
 ) -> Tuple[slice, slice, slice]:
-    """Return slice objects for train, validation, test (no shuffle).
-
-    Args:
-        n: Number of usable sequence end indices.
-        train_ratio: Fraction for training.
-        val_ratio: Fraction for validation (remainder is test).
-
-    Returns:
-        Three slices in time order.
-    """
     if n < 3:
         raise ValueError("Need at least 3 sequences for train/val/test split")
     n_train = max(1, int(n * train_ratio))
@@ -57,24 +43,12 @@ def chronological_split_indices(
 
 
 class TimeSeriesSequenceDataset(Dataset):
-    """Windows of length ``seq_len`` ending at index i, predicting label at i."""
-
     def __init__(
         self,
         features: np.ndarray,
         labels: np.ndarray,
         seq_len: int,
     ) -> None:
-        """Build tensor dataset.
-
-        Args:
-            features: Array shape ``(T, F)``.
-            labels: Integer labels shape ``(T,)`` (same length as features).
-            seq_len: Past window length.
-
-        Raises:
-            ValueError: If shapes mismatch.
-        """
         if len(features) != len(labels):
             raise ValueError("features and labels length mismatch")
         self._x = features.astype(np.float32)
@@ -99,16 +73,6 @@ def build_arrays_from_frame(
     feature_cols: List[str],
     label_col: str,
 ) -> Tuple[np.ndarray, np.ndarray, pd.DatetimeIndex]:
-    """Drop rows with NaN features or label; return aligned numpy arrays.
-
-    Args:
-        df: Feature matrix.
-        feature_cols: Column names used as inputs.
-        label_col: Integer class column.
-
-    Returns:
-        Tuple ``(X, y, index)`` for valid rows only.
-    """
     sub = df[feature_cols + [label_col]].dropna()
     X = sub[feature_cols].to_numpy(dtype=np.float64)
     y = sub[label_col].astype("int64").to_numpy(dtype=np.int64)
@@ -116,29 +80,12 @@ def build_arrays_from_frame(
 
 
 def fit_scaler_on_train(X_train: np.ndarray) -> StandardScaler:
-    """Fit StandardScaler on training feature rows (2D).
-
-    Args:
-        X_train: Shape ``(N, F)``.
-
-    Returns:
-        Fitted scaler.
-    """
     scaler = StandardScaler()
     scaler.fit(X_train)
     return scaler
 
 
 def transform_features(X: np.ndarray, scaler: StandardScaler) -> np.ndarray:
-    """Scale feature matrix.
-
-    Args:
-        X: Features shape ``(N, F)``.
-        scaler: Fitted scaler.
-
-    Returns:
-        Scaled array same shape.
-    """
     return scaler.transform(X).astype(np.float32)
 
 
@@ -148,14 +95,6 @@ def save_artifact_meta(
     seq_len: int,
     label_spec: LabelSpec,
 ) -> None:
-    """Write JSON sidecar for inference.
-
-    Args:
-        path: Output JSON path.
-        feature_cols: Model input columns in order.
-        seq_len: Sequence length.
-        label_spec: Label construction parameters.
-    """
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "feature_columns": feature_cols,
@@ -171,14 +110,6 @@ def save_artifact_meta(
 
 
 def load_artifact_meta(path: Path) -> Tuple[List[str], int, LabelSpec]:
-    """Load JSON sidecar.
-
-    Args:
-        path: JSON path.
-
-    Returns:
-        feature_cols, seq_len, LabelSpec
-    """
     data = json.loads(path.read_text(encoding="utf-8"))
     ls = data["label_spec"]
     spec = LabelSpec(

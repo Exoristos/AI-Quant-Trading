@@ -1,5 +1,3 @@
-"""Training loop and artifact export for LSTMClassifier."""
-
 from __future__ import annotations
 
 import logging
@@ -40,26 +38,6 @@ def train_lstm_classifier(
     device: Optional[str] = None,
     artifacts_dir: Optional[Path] = None,
 ) -> Tuple[LSTMClassifier, Path]:
-    """Train on chronological splits; save model and scaler under artifacts.
-
-    Args:
-        df: Feature DataFrame with ``label_col`` integer classes 0,1,2.
-        feature_cols: Input columns.
-        label_col: Target column name.
-        seq_len: Past window length.
-        label_spec: Label metadata for inference bundle.
-        hidden_size: LSTM hidden size.
-        num_layers: LSTM layers.
-        dropout: Dropout rate.
-        batch_size: Mini-batch size.
-        epochs: Training epochs.
-        lr: Adam learning rate.
-        device: ``cuda`` or ``cpu``; autodetect if None.
-        artifacts_dir: Directory for ``lstm_classifier.pt``, ``scaler.npz``, ``meta.json``.
-
-    Returns:
-        Tuple of trained model and directory used for artifacts.
-    """
     label_spec = label_spec or LabelSpec(horizon=1, hold_epsilon=0.002)
     dev = device or ("cuda" if torch.cuda.is_available() else "cpu")
     artifacts_dir = artifacts_dir or Path("artifacts")

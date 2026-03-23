@@ -1,5 +1,3 @@
-"""Orchestrate providers, macro alignment, indicators, and labels."""
-
 from __future__ import annotations
 
 import logging
@@ -25,18 +23,6 @@ def fetch_ohlcv_panel(
     market: MarketChoice,
     settings: Optional[AppSettings] = None,
 ) -> pd.DataFrame:
-    """Fetch OHLCV for a single-ticker workflow (first ticker used for panel).
-
-    Args:
-        tickers: Symbols; first element is used when building a single series.
-        start: Start date.
-        end: End date.
-        market: ``us`` uses yfinance; ``bist`` uses EODHD.
-        settings: App settings for API keys.
-
-    Returns:
-        DataFrame indexed by date with OHLCV (+ optional ticker column).
-    """
     settings = settings or AppSettings()
     if not tickers:
         raise ValueError("tickers must be non-empty")
@@ -62,18 +48,7 @@ def forward_return_label(
     horizon: int = 1,
     hold_epsilon: float = 0.002,
 ) -> pd.Series:
-    """Build 3-class labels from forward simple return (no same-bar leakage).
-
-    Class mapping: 0 = SELL (-1), 1 = HOLD (0), 2 = BUY (+1).
-
-    Args:
-        close: Close prices.
-        horizon: Forward horizon in bars for return.
-        hold_epsilon: Absolute return below this => HOLD.
-
-    Returns:
-        Nullable integer Series aligned to index; last ``horizon`` rows NA.
-    """
+    """3-class labels from forward return: 0 short, 1 flat, 2 long (within ±hold_epsilon → flat)."""
     fwd = close.shift(-horizon) / close - 1.0
     out = pd.Series(pd.NA, index=close.index, dtype="Int64")
     out.loc[fwd > hold_epsilon] = 2
@@ -96,24 +71,6 @@ def build_feature_matrix(
     use_evds_macro: bool = False,
     evds_series_codes: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, List[str]]:
-    """End-to-end single-symbol feature table with label ``y_class``.
-
-    Args:
-        tickers: Symbols; first used.
-        start: Start date.
-        end: End date.
-        market: ``us`` or ``bist``.
-        horizon: Label horizon.
-        hold_epsilon: Neutral return band.
-        settings: API keys and paths.
-        macro_csv_path: Optional CSV merged with merge_asof.
-        use_fred_macro: If True and key present, merge CPI/DEXUSEU panel.
-        use_evds_macro: If True and ``EVDS_API_KEY`` set, fetch TCMB series.
-        evds_series_codes: Comma-separated EVDS codes (e.g. ``TP.DK.USD.A.YTL``).
-
-    Returns:
-        Tuple of (features + macro + label DataFrame, list of model feature column names).
-    """
     settings = settings or AppSettings()
     ohlcv = fetch_ohlcv_panel(tickers, start, end, market, settings)
     if ohlcv.empty:

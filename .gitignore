@@ -16,9 +16,14 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
-# IDE
+# IDE & Cursor (.cursor/skills dahil — repoya girmez)
 .idea/
 .vscode/
+.cursor/
+
+# Yerel notlar (handoff / kullanım — paylaşılmaz)
+/HANDOFF.md
+/NASIL_KULLANILIR.md
 
 # OS
 Thumbs.db

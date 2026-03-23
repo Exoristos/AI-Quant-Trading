@@ -1,5 +1,3 @@
-"""Macro series loading and backward merge onto equity calendar."""
-
 from __future__ import annotations
 
 import logging
@@ -15,15 +13,6 @@ FRED_OBS_URL = "https://api.stlouisfed.org/fred/series/observations"
 
 
 def load_macro_from_csv(path: str | Path, date_col: str = "date") -> pd.DataFrame:
-    """Load macro columns from CSV with a date column.
-
-    Args:
-        path: Filesystem path to CSV.
-        date_col: Name of date column (parsed as datetime).
-
-    Returns:
-        DataFrame indexed by normalized date, sorted ascending.
-    """
     p = Path(path)
     df = pd.read_csv(p, parse_dates=[date_col])
     df = df.set_index(date_col)
@@ -41,17 +30,6 @@ def fetch_fred_series(
     start: Optional[str] = None,
     end: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Fetch a single FRED series into a one-column DataFrame.
-
-    Args:
-        series_id: FRED series id (e.g. ``CPIAUCSL``).
-        api_key: FRED API key.
-        start: Optional observation start ``YYYY-MM-DD``.
-        end: Optional observation end ``YYYY-MM-DD``.
-
-    Returns:
-        DataFrame with column named ``series_id`` and DatetimeIndex.
-    """
     params: Dict[str, str] = {
         "series_id": series_id,
         "api_key": api_key,
@@ -104,17 +82,6 @@ def merge_macro_asof(
     macro: pd.DataFrame,
     tolerance_days: int = 31,
 ) -> pd.DataFrame:
-    """Align macro to equity dates using backward as-of merge (no future data).
-
-    Args:
-        equity_index: Target trading dates (normalized).
-        macro: Macro DataFrame indexed by observation/release date.
-        tolerance_days: Max gap (calendar days) for a match; else NaN.
-
-    Returns:
-        DataFrame reindexed to ``equity_index`` with macro columns and
-        ``{col}_staleness_days`` (calendar days since last macro observation).
-    """
     if macro.empty:
         return pd.DataFrame(index=equity_index)
     macro = macro.sort_index()
@@ -164,17 +131,6 @@ def build_default_macro_panel(
     fred_api_key: Optional[str],
     extra_series: Optional[List[str]] = None,
 ) -> pd.DataFrame:
-    """Optionally download common US macro series and outer-join on date.
-
-    Args:
-        start: Start date string.
-        end: End date string.
-        fred_api_key: If None, returns empty DataFrame.
-        extra_series: Additional FRED ids to merge.
-
-    Returns:
-        DataFrame indexed by date with one column per series (ffill along time).
-    """
     if not fred_api_key:
         logger.warning("FRED_API_KEY not set; macro panel empty")
         return pd.DataFrame()
