@@ -16,7 +16,7 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
-# IDE & Cursor (.cursor/skills dahil — repoya girmez)
+# IDE / editör yerel klasörleri (repoya girmez)
 .idea/
 .vscode/
 .cursor/
