@@ -4,6 +4,19 @@ Günlük **BIST** ve **ABD** hisse verisinde teknik göstergeler + isteğe bağl
 
 > **Uyarı:** Araştırma ve eğitim içindir; **yatırım tavsiyesi değildir.** Backtest sonuçları veri, evren ve parametrelere bağlıdır.
 
+## Portfolio case study
+
+Bu proje, yalnızca bir fiyat tahmin modeli değil; veri alma, özellik üretimi,
+zaman serisi doğrulaması, risk kontrollü pozisyon boyutlandırma, işlem maliyetli
+backtest ve Streamlit sunum katmanını bir araya getiren uçtan uca araştırma
+platformudur. Portföy açısından öne çıkan kararlar:
+
+- rastgele train/test bölmek yerine zaman sırasını koruyan walk-forward akışı,
+- look-ahead bias riskini azaltmak için sinyali bir bar geciktirme,
+- komisyon ve slipajı performans hesabına dahil etme,
+- tahmin güvenini doğrudan sınırsız pozisyona çevirmeyen risk katmanı,
+- API anahtarlarını koddan ayıran `.env` / Streamlit secrets yapılandırması.
+
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/Exoristos/AI-Quant-Trading/actions/workflows/ci.yml/badge.svg)](https://github.com/Exoristos/AI-Quant-Trading/actions/workflows/ci.yml)
