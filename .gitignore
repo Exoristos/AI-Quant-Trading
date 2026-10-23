@@ -31,3 +31,10 @@ Thumbs.db
 
 # Artifacts / runs
 artifacts/
+
+# lokal ai arac klasorleri repoya girmesin
+.cursor/
+.claude/
+.cursorrules
+CLAUDE.md
+.mcp.json
